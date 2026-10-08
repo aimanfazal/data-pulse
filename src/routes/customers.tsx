@@ -57,6 +57,15 @@ const SEGMENT_NOTE: Record<string, string> = {
   Hibernating: "Long inactive, low value",
 };
 
+const SEGMENT_ICON: Record<string, string> = {
+  Champions: "🏆",
+  Loyal: "💎",
+  Potential: "🌱",
+  "New Customers": "✨",
+  "At Risk": "⚠️",
+  Hibernating: "💤",
+};
+
 function CustomersPage() {
   const { orders } = useDashboard();
   const [query, setQuery] = useState("");
@@ -101,6 +110,7 @@ function CustomersPage() {
       description="Retention, lifetime value and RFM-style segmentation across the filtered dataset."
     >
       <div className="space-y-5 p-4 md:p-6">
+        {/* KPI row */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard
             label="Customers"
@@ -129,8 +139,9 @@ function CustomersPage() {
         </div>
 
         <div className="grid gap-5 lg:grid-cols-2">
+          {/* New vs returning donut */}
           <ChartCard title="New vs returning" subtitle="Customers by purchase frequency">
-            <div className="h-64">
+            <div className="h-64 rounded-xl overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -139,25 +150,32 @@ function CustomersPage() {
                     nameKey="name"
                     innerRadius="55%"
                     outerRadius="82%"
-                    paddingAngle={2}
-                    stroke="var(--card)"
+                    paddingAngle={3}
+                    strokeWidth={0}
                   >
                     {split.map((_, i) => (
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip content={<ChartTooltip money={false} />} />
-                  <Legend verticalAlign="bottom" iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+                  <Legend verticalAlign="bottom" iconType="circle" wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
           </ChartCard>
 
+          {/* CLV distribution */}
           <ChartCard title="Lifetime value distribution" subtitle="Customers per spend band">
-            <div className="h-64">
+            <div className="h-64 rounded-xl overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={clv} margin={{ left: 4, right: 8, top: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <defs>
+                    <linearGradient id="clvGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={0.95} />
+                      <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0.60} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} vertical={false} />
                   <XAxis
                     dataKey="name"
                     tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
@@ -170,41 +188,71 @@ function CustomersPage() {
                     axisLine={false}
                     width={36}
                   />
-                  <Tooltip content={<ChartTooltip money={false} />} cursor={{ fill: "var(--muted)" }} />
-                  <Bar dataKey="customers" name="Customers" radius={[6, 6, 0, 0]} fill="var(--chart-2)" />
+                  <Tooltip content={<ChartTooltip money={false} />} cursor={{ fill: "var(--muted)", opacity: 0.5 }} />
+                  <Bar dataKey="customers" name="Customers" radius={[6, 6, 0, 0]} fill="url(#clvGrad)" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </ChartCard>
         </div>
 
+        {/* RFM segments */}
         <ChartCard title="RFM segmentation" subtitle="Recency, frequency and monetary value">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {segments.map((s, i) => (
               <div
                 key={s.name}
-                className="rounded-xl border border-border p-4"
-                style={{ borderLeft: `4px solid ${CHART_COLORS[i % CHART_COLORS.length]}` }}
+                className="rounded-xl border border-border p-4 transition-all duration-200 hover:-translate-y-0.5"
+                style={{
+                  borderLeft: `4px solid ${CHART_COLORS[i % CHART_COLORS.length]}`,
+                  boxShadow: "var(--shadow-card)",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--shadow-card-hover)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--shadow-card)";
+                }}
               >
-                <div className="flex items-baseline justify-between">
-                  <p className="text-sm font-semibold text-foreground">{s.name}</p>
-                  <span className="text-sm font-medium num">{s.customers}</span>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">{SEGMENT_ICON[s.name] ?? "•"}</span>
+                    <p className="text-sm font-semibold text-foreground">{s.name}</p>
+                  </div>
+                  <span
+                    className="text-sm font-bold num rounded-full px-2.5 py-0.5"
+                    style={{
+                      background: `${CHART_COLORS[i % CHART_COLORS.length]}22`,
+                      color: CHART_COLORS[i % CHART_COLORS.length],
+                    }}
+                  >
+                    {s.customers}
+                  </span>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">{SEGMENT_NOTE[s.name]}</p>
-                <p className="mt-2 text-xs font-medium num text-foreground">
+                <p className="mt-1.5 text-xs text-muted-foreground">{SEGMENT_NOTE[s.name]}</p>
+                <p className="mt-2.5 text-xs font-semibold num text-foreground">
                   {currency(s.revenue)} revenue ·{" "}
-                  {totalRevenue ? Math.round((s.revenue / totalRevenue) * 100) : 0}%
+                  <span className="text-muted-foreground font-normal">
+                    {totalRevenue ? Math.round((s.revenue / totalRevenue) * 100) : 0}%
+                  </span>
                 </p>
               </div>
             ))}
           </div>
         </ChartCard>
 
+        {/* Top 10 customers chart */}
         <ChartCard title="Top 10 customers by spend" subtitle="Highest lifetime revenue in range">
-          <div className="h-72">
+          <div className="h-72 rounded-xl overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={top10} layout="vertical" margin={{ left: 8, right: 16 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                <defs>
+                  <linearGradient id="custGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.65} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} horizontal={false} />
                 <XAxis
                   type="number"
                   tickFormatter={(v: number) => currency(v)}
@@ -220,13 +268,14 @@ function CustomersPage() {
                   tickLine={false}
                   axisLine={false}
                 />
-                <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--muted)" }} />
-                <Bar dataKey="revenue" name="Revenue" radius={[0, 6, 6, 0]} fill="var(--chart-1)" />
+                <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--muted)", opacity: 0.5 }} />
+                <Bar dataKey="revenue" name="Revenue" radius={[0, 6, 6, 0]} fill="url(#custGrad)" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </ChartCard>
 
+        {/* Customer table */}
         <Card className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -257,14 +306,18 @@ function CustomersPage() {
               </thead>
               <tbody>
                 {sort.sorted.map((c) => (
-                  <tr key={c.customer_id} className="border-b border-border/60 hover:bg-muted/50">
+                  <tr key={c.customer_id} className="border-b border-border/60 hover:bg-muted/50 transition-colors">
                     <td className="px-3 py-2.5 font-medium text-foreground">
                       {c.customer_name}
                       <span className="ml-2 text-xs text-muted-foreground num">{c.customer_id}</span>
                     </td>
-                    <td className="px-3 py-2.5 text-muted-foreground">{c.segment}</td>
+                    <td className="px-3 py-2.5">
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                        {c.segment}
+                      </span>
+                    </td>
                     <td className="px-3 py-2.5 text-right num">{c.orders}</td>
-                    <td className="px-3 py-2.5 text-right font-medium num">{exact(c.revenue)}</td>
+                    <td className="px-3 py-2.5 text-right font-semibold num">{exact(c.revenue)}</td>
                     <td className="px-3 py-2.5 text-right num">{exact(c.aov)}</td>
                     <td className="px-3 py-2.5 text-right num">{c.recencyDays}</td>
                   </tr>
