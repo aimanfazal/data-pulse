@@ -20,17 +20,25 @@ function MultiSelect({
   selected: string[];
   onChange: (next: string[]) => void;
 }) {
+  const hasSelected = selected.length > 0;
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="justify-between gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="justify-between gap-2 transition-all duration-150 hover:border-primary/50 hover:bg-primary/5"
+        >
           {label}
-          {selected.length ? (
-            <Badge className="bg-primary/12 text-primary" variant="secondary">
+          {hasSelected ? (
+            <Badge
+              className="bg-primary text-primary-foreground ring-1 ring-primary/30 shadow-sm"
+              variant="secondary"
+            >
               {selected.length}
             </Badge>
           ) : (
-            <span className="text-muted-foreground">All</span>
+            <span className="text-muted-foreground text-xs">All</span>
           )}
           <ChevronDown className="size-3.5 opacity-60" />
         </Button>
@@ -45,7 +53,7 @@ function MultiSelect({
               return (
                 <label
                   key={opt}
-                  className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
+                  className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors"
                 >
                   <Checkbox
                     checked={checked}
@@ -61,11 +69,11 @@ function MultiSelect({
             })
           )}
         </div>
-        {selected.length ? (
+        {hasSelected ? (
           <Button
             variant="ghost"
             size="sm"
-            className="mt-1 w-full"
+            className="mt-1 w-full text-destructive hover:text-destructive hover:bg-destructive/8"
             onClick={() => onChange([])}
           >
             Clear
@@ -88,6 +96,13 @@ export function FilterBar() {
     loadSample,
     sourceName,
   } = useDashboard();
+
+  const hasActiveFilters =
+    filters.categories.length > 0 ||
+    filters.regions.length > 0 ||
+    filters.segments.length > 0 ||
+    filters.from !== bounds.min ||
+    filters.to !== bounds.max;
 
   const exportSummary = () => {
     const k = kpis(orders, previousOrders);
@@ -124,9 +139,10 @@ export function FilterBar() {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-border bg-card/70 px-4 py-3 backdrop-blur md:px-6">
-      <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-2.5 py-1.5">
-        <CalendarRange className="size-4 text-muted-foreground" />
+    <div className="flex flex-wrap items-center gap-2 border-b border-border bg-card/80 px-4 py-3 backdrop-blur-sm md:px-6">
+      {/* Date range */}
+      <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-2.5 py-1.5 transition-colors hover:border-primary/40">
+        <CalendarRange className="size-4 text-primary" />
         <input
           type="date"
           value={filters.from}
@@ -164,13 +180,21 @@ export function FilterBar() {
         selected={filters.segments}
         onChange={(segments) => setFilters({ segments })}
       />
-      <Button variant="ghost" size="sm" onClick={resetFilters}>
-        <RotateCcw className="size-3.5" />
-        Reset
-      </Button>
+
+      {hasActiveFilters && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={resetFilters}
+          className="text-destructive hover:text-destructive hover:bg-destructive/8"
+        >
+          <RotateCcw className="size-3.5" />
+          Reset
+        </Button>
+      )}
 
       <div className="ml-auto flex flex-wrap items-center gap-2">
-        <span className="hidden text-xs text-muted-foreground lg:inline num">
+        <span className="hidden text-xs font-medium text-primary lg:inline num">
           {orders.length.toLocaleString()} rows in view
         </span>
         <Button variant="ghost" size="sm" onClick={loadSample}>
@@ -178,7 +202,12 @@ export function FilterBar() {
           Sample data
         </Button>
         <UploadButton />
-        <Button size="sm" onClick={exportSummary}>
+        <Button
+          size="sm"
+          onClick={exportSummary}
+          className="text-white shadow-md"
+          style={{ backgroundImage: "var(--gradient-hero)" }}
+        >
           <Download className="size-4" />
           Export summary
         </Button>

@@ -45,7 +45,7 @@ export function SortHeader<T>({
   return (
     <th
       className={cn(
-        "cursor-pointer select-none py-2 px-3 text-xs font-medium uppercase tracking-wide",
+        "cursor-pointer select-none py-2 px-3 text-xs font-medium uppercase tracking-wide transition-colors duration-150 hover:text-foreground",
         align === "right" ? "text-right" : "text-left",
         active ? "text-foreground" : "text-muted-foreground",
       )}
@@ -58,7 +58,7 @@ export function SortHeader<T>({
         )}
       >
         {label}
-        <Icon className="size-3 opacity-70" />
+        <Icon className={cn("size-3 opacity-70", active && "opacity-100 text-primary")} />
       </span>
     </th>
   );

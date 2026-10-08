@@ -73,6 +73,7 @@ function OverviewPage() {
       description="Headline performance for the selected period, compared with the preceding one."
     >
       <div className="space-y-5 p-4 md:p-6">
+        {/* KPI row */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard
             label="Total revenue"
@@ -100,6 +101,7 @@ function OverviewPage() {
           />
         </div>
 
+        {/* Revenue trend */}
         <ChartCard
           title="Revenue trend"
           subtitle={`${k.units.toLocaleString()} units sold across the selected range`}
@@ -119,16 +121,17 @@ function OverviewPage() {
             </div>
           }
         >
-          <div className="h-72">
+          <div className="h-72 rounded-xl overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trend} margin={{ left: 4, right: 8, top: 8 }}>
                 <defs>
-                  <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.02} />
+                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.55} />
+                    <stop offset="60%" stopColor="var(--chart-1)" stopOpacity={0.12} />
+                    <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.01} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} vertical={false} />
                 <XAxis
                   dataKey="label"
                   tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
@@ -149,7 +152,7 @@ function OverviewPage() {
                   name="Revenue"
                   stroke="var(--chart-1)"
                   strokeWidth={2.5}
-                  fill="url(#rev)"
+                  fill="url(#revGrad)"
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -157,8 +160,9 @@ function OverviewPage() {
         </ChartCard>
 
         <div className="grid gap-5 lg:grid-cols-2">
+          {/* Category donut */}
           <ChartCard title="Revenue by category" subtitle="Share of total revenue">
-            <div className="h-72">
+            <div className="h-72 rounded-xl overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -167,8 +171,8 @@ function OverviewPage() {
                     nameKey="name"
                     innerRadius="55%"
                     outerRadius="82%"
-                    paddingAngle={2}
-                    stroke="var(--card)"
+                    paddingAngle={3}
+                    strokeWidth={0}
                   >
                     {categories.map((_, i) => (
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
@@ -178,18 +182,27 @@ function OverviewPage() {
                   <Legend
                     verticalAlign="bottom"
                     iconType="circle"
-                    wrapperStyle={{ fontSize: 12 }}
+                    wrapperStyle={{ fontSize: 12, paddingTop: 12 }}
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
           </ChartCard>
 
+          {/* Regional bar chart */}
           <ChartCard title="Sales by region" subtitle="Revenue and average order value">
-            <div className="h-72">
+            <div className="h-72 rounded-xl overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={regions} layout="vertical" margin={{ left: 8, right: 16 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                  <defs>
+                    {regions.map((_, i) => (
+                      <linearGradient key={i} id={`rgn${i}`} x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor={CHART_COLORS[i % CHART_COLORS.length]} stopOpacity={0.9} />
+                        <stop offset="100%" stopColor={CHART_COLORS[i % CHART_COLORS.length]} stopOpacity={0.65} />
+                      </linearGradient>
+                    ))}
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} horizontal={false} />
                   <XAxis
                     type="number"
                     tickFormatter={(v: number) => currency(v)}
@@ -205,10 +218,10 @@ function OverviewPage() {
                     tickLine={false}
                     axisLine={false}
                   />
-                  <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--muted)" }} />
+                  <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--muted)", opacity: 0.5 }} />
                   <Bar dataKey="revenue" name="Revenue" radius={[0, 6, 6, 0]}>
                     {regions.map((_, i) => (
-                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                      <Cell key={i} fill={`url(#rgn${i})`} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -217,6 +230,7 @@ function OverviewPage() {
           </ChartCard>
         </div>
 
+        {/* Top products table */}
         <ChartCard title="Top 5 best-selling products" subtitle="Ranked by revenue in range">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -231,12 +245,23 @@ function OverviewPage() {
               </thead>
               <tbody>
                 {topProducts.map((p, i) => (
-                  <tr key={p.name} className="border-b border-border/60 last:border-0">
-                    <td className="py-2.5 pr-3 num text-muted-foreground">{i + 1}</td>
+                  <tr key={p.name} className="border-b border-border/60 last:border-0 hover:bg-muted/40 transition-colors">
+                    <td className="py-2.5 pr-3">
+                      <span
+                        className="inline-grid size-6 place-items-center rounded-full text-[11px] font-bold text-white"
+                        style={{ background: CHART_COLORS[i % CHART_COLORS.length] }}
+                      >
+                        {i + 1}
+                      </span>
+                    </td>
                     <td className="py-2.5 pr-3 font-medium text-foreground">{p.name}</td>
-                    <td className="py-2.5 pr-3 text-muted-foreground">{p.category}</td>
+                    <td className="py-2.5 pr-3">
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                        {p.category}
+                      </span>
+                    </td>
                     <td className="py-2.5 pr-3 text-right num">{p.units.toLocaleString()}</td>
-                    <td className="py-2.5 text-right font-medium num">{exact(p.revenue)}</td>
+                    <td className="py-2.5 text-right font-semibold num">{exact(p.revenue)}</td>
                   </tr>
                 ))}
               </tbody>

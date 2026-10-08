@@ -69,14 +69,21 @@ function ProductsPage() {
     >
       <div className="space-y-5 p-4 md:p-6">
         <div className="grid gap-5 lg:grid-cols-2">
+          {/* Top performers */}
           <ChartCard
             title="Top performers"
             subtitle="Highest revenue products in range"
             action={<TrendingUp className="size-4 text-success" />}
           >
             <ul className="space-y-3">
-              {top.map((p) => (
-                <li key={p.name} className="flex items-center gap-3">
+              {top.map((p, i) => (
+                <li key={p.name} className="flex items-center gap-3 group">
+                  <span
+                    className="grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold text-white"
+                    style={{ background: CHART_COLORS[i % CHART_COLORS.length] }}
+                  >
+                    {i + 1}
+                  </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">{p.name}</p>
                     <p className="text-xs text-muted-foreground num">
@@ -90,14 +97,18 @@ function ProductsPage() {
             </ul>
           </ChartCard>
 
+          {/* Underperformers */}
           <ChartCard
             title="Underperformers"
             subtitle="Lowest revenue products worth reviewing"
             action={<TrendingDown className="size-4 text-destructive" />}
           >
             <ul className="space-y-3">
-              {bottom.map((p) => (
+              {bottom.map((p, i) => (
                 <li key={p.name} className="flex items-center gap-3">
+                  <span className="grid size-6 shrink-0 place-items-center rounded-full bg-muted text-[11px] font-bold text-muted-foreground">
+                    {i + 1}
+                  </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">{p.name}</p>
                     <p className="text-xs text-muted-foreground num">
@@ -112,6 +123,7 @@ function ProductsPage() {
           </ChartCard>
         </div>
 
+        {/* Category chart */}
         <ChartCard
           title="Category revenue breakdown"
           subtitle={drill ? `Filtered to ${drill} — click again to clear` : "Click a bar to drill into a category"}
@@ -123,10 +135,18 @@ function ProductsPage() {
             ) : null
           }
         >
-          <div className="h-64">
+          <div className="h-64 rounded-xl overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={categories} margin={{ left: 4, right: 8, top: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <defs>
+                  {categories.map((_, i) => (
+                    <linearGradient key={i} id={`cat${i}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={CHART_COLORS[i % CHART_COLORS.length]} stopOpacity={0.95} />
+                      <stop offset="100%" stopColor={CHART_COLORS[i % CHART_COLORS.length]} stopOpacity={0.65} />
+                    </linearGradient>
+                  ))}
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} vertical={false} />
                 <XAxis
                   dataKey="name"
                   tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
@@ -140,7 +160,7 @@ function ProductsPage() {
                   axisLine={false}
                   width={62}
                 />
-                <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--muted)" }} />
+                <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--muted)", opacity: 0.5 }} />
                 <Bar
                   dataKey="revenue"
                   name="Revenue"
@@ -153,8 +173,9 @@ function ProductsPage() {
                   {categories.map((c, i) => (
                     <Cell
                       key={c.name}
-                      fill={CHART_COLORS[i % CHART_COLORS.length]}
-                      fillOpacity={!drill || drill === c.name ? 1 : 0.3}
+                      fill={`url(#cat${i})`}
+                      fillOpacity={!drill || drill === c.name ? 1 : 0.25}
+                      style={drill === c.name ? { filter: "drop-shadow(0 0 8px var(--chart-1))" } : undefined}
                     />
                   ))}
                 </Bar>
@@ -163,6 +184,7 @@ function ProductsPage() {
           </div>
         </ChartCard>
 
+        {/* Product table */}
         <Card className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -196,11 +218,15 @@ function ProductsPage() {
               </thead>
               <tbody>
                 {sort.sorted.map((p) => (
-                  <tr key={p.name} className="border-b border-border/60 hover:bg-muted/50">
+                  <tr key={p.name} className="border-b border-border/60 hover:bg-muted/50 transition-colors">
                     <td className="px-3 py-2.5 font-medium text-foreground">{p.name}</td>
-                    <td className="px-3 py-2.5 text-muted-foreground">{p.category}</td>
+                    <td className="px-3 py-2.5">
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                        {p.category}
+                      </span>
+                    </td>
                     <td className="px-3 py-2.5 text-right num">{p.units.toLocaleString()}</td>
-                    <td className="px-3 py-2.5 text-right font-medium num">{exact(p.revenue)}</td>
+                    <td className="px-3 py-2.5 text-right font-semibold num">{exact(p.revenue)}</td>
                     <td className="px-3 py-2.5 text-right num">{exact(p.avgPrice)}</td>
                     <td className="px-3 py-2.5 text-right">
                       <Delta value={p.growth} />
