@@ -22,13 +22,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/products")({
   head: () => ({
     meta: [
-      { title: "Product Performance — Commerce IQ" },
+      { title: "Product Performance — DataPulse" },
       {
         name: "description",
         content:
           "Compare products by units sold, revenue, average price and growth, with category drill-down.",
       },
-      { property: "og:title", content: "Product Performance — Commerce IQ" },
+      { property: "og:title", content: "Product Performance — DataPulse" },
       {
         property: "og:description",
         content: "Spot top performers and underperformers across your product catalog.",

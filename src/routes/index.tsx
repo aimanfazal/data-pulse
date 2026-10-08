@@ -38,13 +38,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Overview — Commerce IQ Sales Analytics" },
+      { title: "Overview — DataPulse Sales Analytics" },
       {
         name: "description",
         content:
           "Track revenue, orders, average order value and regional performance across your e-commerce sales data.",
       },
-      { property: "og:title", content: "Overview — Commerce IQ Sales Analytics" },
+      { property: "og:title", content: "Overview — DataPulse Sales Analytics" },
       {
         property: "og:description",
         content: "Revenue trends, category mix and top products in one live dashboard.",

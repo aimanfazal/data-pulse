@@ -1,4 +1,4 @@
-# Commerce IQ — E-Commerce Sales Analytics
+# DataPulse — E-Commerce Sales Analytics
 
 A client-side analytics dashboard for e-commerce order data. Load your own CSV or explore the built-in sample dataset to get instant visibility into revenue, product performance, customer behaviour, and growth trends — no backend required.
 

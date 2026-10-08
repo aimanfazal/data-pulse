@@ -1,4 +1,4 @@
-# UI/UX Visual Improvements Plan — Commerce IQ
+# UI/UX Visual Improvements Plan — DataPulse
 
 ## Top-Level Overview
 

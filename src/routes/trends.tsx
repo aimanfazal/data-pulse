@@ -33,13 +33,13 @@ import {
 export const Route = createFileRoute("/trends")({
   head: () => ({
     meta: [
-      { title: "Trends & Growth — Commerce IQ" },
+      { title: "Trends & Growth — DataPulse" },
       {
         name: "description",
         content:
           "Month-over-month and year-over-year growth, seasonality, payment mix and automatic insights.",
       },
-      { property: "og:title", content: "Trends & Growth — Commerce IQ" },
+      { property: "og:title", content: "Trends & Growth — DataPulse" },
       {
         property: "og:description",
         content: "Find the seasons, channels and categories driving your growth.",

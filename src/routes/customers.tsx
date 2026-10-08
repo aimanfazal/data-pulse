@@ -32,13 +32,13 @@ import { Users, UserPlus, Repeat, Crown } from "lucide-react";
 export const Route = createFileRoute("/customers")({
   head: () => ({
     meta: [
-      { title: "Customer Insights — Commerce IQ" },
+      { title: "Customer Insights — DataPulse" },
       {
         name: "description",
         content:
           "New versus returning customers, lifetime value distribution and RFM segmentation for your buyers.",
       },
-      { property: "og:title", content: "Customer Insights — Commerce IQ" },
+      { property: "og:title", content: "Customer Insights — DataPulse" },
       {
         property: "og:description",
         content: "Understand who buys, how often, and which customers are slipping away.",
